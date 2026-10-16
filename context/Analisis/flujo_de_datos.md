@@ -9,41 +9,53 @@ Este documento define el ciclo de vida del dato desde su captura en las diferent
 ```mermaid
 flowchart TD
     subgraph Orígenes ["1. Fuentes de Datos (Insumos)"]
-        G1["Gasera 1 (Archivos Excel)"]
-        G2["Gasera 2 (Archivos Excel)"]
-        G3["Gasera 3 (Archivos Excel)"]
-        G4["Gasera 4 (Archivos Excel)"]
-        G5["Gasera 5 (Archivos Excel)"]
-        G6["Gasera 6 (Archivos Excel)"]
-        BD["Base de Datos Centralizada"]
+        subgraph Historico ["Histórico Desconectado"]
+            BA["Base Acumulada (Descarga Local Antigua - Todas las Gaseras)"]
+        end
+        subgraph Diario ["Gestión Diaria (Operación)"]
+            G1["Gasera 1 (Gestión Diaria)"]
+            G2["Gasera 2 (Gestión Diaria)"]
+            G3["Gasera 3 (Gestión Diaria)"]
+            G4["Gasera 4 (Gestión Diaria)"]
+            G5["Gasera 5 (Gestión Diaria)"]
+            G6["Gasera 6 (Gestión Diaria)"]
+        end
+        BD["Base de Datos Centralizada (Futura/En Proceso)"]
     end
 
     subgraph Ingestion ["2. Ingesta y Captura"]
-        RawExcel["Lectura Hojas / Rangos Excel"]
+        LoadBA["Lectura y Perfilado de Base Acumulada"]
+        RawExcel["Lectura Hojas / Rangos Gestión Diaria"]
         DBSync["Conexión y Extracción BD"]
     end
 
-    subgraph Auditoria ["3. Capa de Validación y Calidad"]
+    subgraph Conciliacion ["3. Empalme y Reconciliación"]
+        MergeKey["Cruce por Llave Común (ID_Contrato / ID_Gestion / Cliente)"]
+        CheckGap["Identificación de Desfase Temporal / Brecha de Datos"]
+    end
+
+    subgraph Auditoria ["4. Capa de Validación y Calidad"]
         ValFormat["Validación de Estructura y Tipos"]
         CheckDups["Detección de Duplicados e Inconsistencias"]
         CheckNulls["Gestión de Registros Nulos / Vacíos"]
     end
 
-    subgraph Transformacion ["4. Homologación y Transformación"]
+    subgraph Transformacion ["5. Homologación y Transformación"]
         StdCat["Estandarización de Catálogos (Estados / Motivos)"]
         MapGaseras["Etiquetado y Mapeo por Gasera"]
         CalcMetrics["Cálculo de Métricas y KPIs Diarios"]
     end
 
-    subgraph Storage ["5. Capa Analítica / Consolidado"]
-        Staging["Tablas Consolidadas / Modelo Dimensional"]
+    subgraph Storage ["6. Capa Analítica / Consolidado"]
+        Staging["Tablas Consolidadas (Histórico + Diario Unificado)"]
     end
 
-    subgraph Consumo ["6. Salidas y Visualización"]
+    subgraph Consumo ["7. Salidas y Visualización"]
         DashDaily["Dashboard de Retención Diario"]
         RepMgmt["Reportes Operativos y Gerenciales"]
     end
 
+    BA --> LoadBA
     G1 --> RawExcel
     G2 --> RawExcel
     G3 --> RawExcel
@@ -52,8 +64,10 @@ flowchart TD
     G6 --> RawExcel
     BD --> DBSync
 
-    RawExcel --> ValFormat
-    DBSync --> ValFormat
+    LoadBA --> MergeKey
+    RawExcel --> MergeKey
+    DBSync --> MergeKey
+    MergeKey --> CheckGap --> ValFormat
     ValFormat --> CheckDups --> CheckNulls
     CheckNulls --> StdCat --> MapGaseras --> CalcMetrics
     CalcMetrics --> Staging
