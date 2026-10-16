@@ -2,9 +2,14 @@
 
 ## 1. Contexto del Negocio y Alcance
 * **Organización:** Promigas.
-* **Área:** Retención.
-* **Entidades / Gaseras involucradas:** 5 a 6 empresas distribuidoras de gas asociadas a Promigas.
-* **Objetivo General:** Diseñar y construir un sistema de reportería y dashboard diario para la gestión de retención, garantizando calidad, consistencia y trazabilidad de los datos recolectados día a día.
+* **Área:** Retención y Experiencia al Cliente.
+* **Entidades / Gaseras Confirmadas (5):**
+  1. **CEO** (Compañía Energética del Cauca) - *Solo Inbound*
+  2. **Efigas** - *Solo Outbound*
+  3. **Gas Caribe** (Gases del Caribe) - *Inbound y Outbound*
+  4. **GDO** (Gases de Occidente) - *Registro En Vivo: Inbound, Outbound, PQRS*
+  5. **Surtigas** - *Inbound (Histórico + Continuidad) y Outbound*
+* **Objetivo General:** Diseñar y construir un sistema de reportería y dashboard diario para la gestión de retención, garantizando calidad, consistencia y trazabilidad de los datos recolectados día a día, facilitando la transición desde planillas Excel en SharePoint hacia una Base de Datos centralizada e integración definitiva con la plataforma **OCM (Omnichannel Contact Manager)**.
 
 ---
 
@@ -17,12 +22,17 @@ Antes de construir interfaces o arquitecturas de backend, este proyecto sigue un
 
 ---
 
-## 3. Matriz de Fuentes de Datos (En Construcción)
-| ID Fuente | Nombre Archivo / Tabla | Gasera / Unidad | Tipo (Excel / DB / CSV) | Periodicidad | Responsable / Origen | Observaciones |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| *SRC-01* | **Base Acumulada** | Todas las gaseras | Local / Descarga antigua | Histórica (Estática) | Descarga previa local | **Hallazgo crítico:** Contiene histórico de todas las gaseras pero actualmente **NO está conectada a la gestión diaria**. |
-| *SRC-02* | **Gestión Diaria** | Por gasera / Consolidada | Excel / Operación diaria | Diaria | Operación de Retención | Registros del día a día que deben conciliarse/empalmarse con el acumulado. |
-| *SRC-03* | *BD Transaccional* | *Consolidado* | *Base de Datos* | *Automático* | *Sistemas* | *Pendiente credenciales y validación de tablas*. |
+## 3. Matriz Oficial de Fuentes de Datos
+
+| ID Fuente | Gasera / Entorno | Archivo(s) / Ruta | Tipo de Cabina | Columna Temporal Clave | Regla Crítica |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **SRC-CEO** | CEO | `CEO / Gestion diaria CEO.xlsx` | Inbound + Abandono | `FECHA INGRESO LLAMADA` | Consolidar totales mensuales con fecha de ingreso. |
+| **SRC-EFI** | Efigas | `Efigas / Gestion Diaria Outbound - Efigas.xlsx` | Solo Outbound | `FECHA DE EJECUCION` | **Ignorar obligatoriamente `FECHA BASE`**. |
+| **SRC-GCA** | Gas Caribe | `Gas Caribe / Gestion diaria Inbound...` y `gestión diaria outbound...` | Inbound + Outbound | `FECHA DE ATENCION` (Inb) / `MES` (Out) | Hojas organizadas por mes en Inbound. |
+| **SRC-GDO** | GDO | `VALIDACION INFORMACION GDO- 24 de Junio 2026.xlsx` | En Vivo (Inb + Out + PQRS + Abandono) | Fecha en vivo | **Homologar hoja `informativo` a `PQRS`**. |
+| **SRC-SUR** | Surtigas | `SURTIGAS ARCHIVO RECUPERADO` + `JULIO - AGOSTO` + `outbound surtugas.xlsx` | Inbound + Outbound | `FECHA DE LLAMADA` | Inbound fragmentado en histórico recuperado y continuidad. |
+| **SRC-HIS** | Consolidado Histórico | Base Acumulada Local previa | Histórico todas las gaseras | Por evaluar | Desconectada de la gestión diaria; decidir si truncar, sanear o reemplazar. |
+| **SRC-OCM** | Plataforma Futura | OCM Cloud (Omnichannel Contact Manager) | Telefonía Cloud Unificada | Timestamp de llamada en vivo | Sustituirá definitivamente los archivos Excel en SharePoint. |
 
 ---
 
@@ -39,9 +49,8 @@ Para cada fuente o archivo compartido, resolveremos:
 
 ## 5. Bitácora de Hallazgos y Decisiones
 * **Hallazgo 01 (Arquitectura de Datos - Fuentes Desconectadas):**
-  * **Situación:** Todas las gaseras provienen actualmente de una base histórica descargada localmente llamada **"Base Acumulada"**.
-  * **Problema identificado:** Las tablas de la Base Acumulada están **completamente desconectadas de la gestión diaria**.
-  * **Impacto analítico:** Existe un riesgo alto de desactualización, doble conteo o pérdida de trazabilidad si no se define una llave común y un proceso de actualización (CDC/Upsert o Append) para vincular el historial con el flujo diario.
-* **Fecha:** *Inicio de proyecto*
-  * Creación del repositorio y estructura base analítica.
-  * Definición de lineamientos para análisis previo a desarrollo.
+  * Todas las gaseras provienen históricamente de una base local descargada desactualizada.
+* **Hallazgo 02 (Especificación Oficial Promigas Procesada):**
+  * Se identificaron las 5 gaseras reales (CEO, Efigas, Gas Caribe, GDO, Surtigas) con sus respectivos libros en SharePoint.
+  * Se descubrió la condición en vivo de GDO y las reglas particulares (ignorar `FECHA BASE` en Efigas, homologar `informativo` en GDO, y unir histórico recuperado en Surtigas).
+  * Se documentó la transición obligatoria a **OCM (Omnichannel Contact Manager)** como destino final estratégico para apagar el uso operativo de Excel.

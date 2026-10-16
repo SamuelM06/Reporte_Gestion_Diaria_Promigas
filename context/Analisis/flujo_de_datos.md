@@ -1,110 +1,108 @@
-# 🔄 Flujo de Datos - Reporte Gestión Diaria Promigas
+# 🔄 Flujo de Datos Corregido y Actualizado - Promigas Gestión Diaria
 
-Este documento define el ciclo de vida del dato desde su captura en las diferentes gaseras hasta su visualización en el reporte diario de gestión de retención.
+> **Actualización según Especificación Técnica Oficial Promigas.**  
+> Este documento describe la arquitectura de flujo de datos en dos horizontes temporales: **Fase de Contingencia/Transición (Excel SharePoint)** y **Fase Estratégica Definitiva (OCM + DB Central)**.
 
 ---
 
-## 1. Diagrama Conceptual del Flujo de Datos
+## 1. Diagrama de Flujo de Datos (Arquitectura de Transición y Destino)
 
 ```mermaid
 flowchart TD
-    subgraph Orígenes ["1. Fuentes de Datos (Insumos)"]
-        subgraph Historico ["Histórico Desconectado"]
-            BA["Base Acumulada (Descarga Local Antigua - Todas las Gaseras)"]
+    subgraph FuentesActuales ["1. Fuentes Actuales (En Operación)"]
+        subgraph SP_Madre ["SharePoint Carpeta Madre"]
+            CEO_F["CEO: Gestion diaria CEO.xlsx (Inbound + Abandono)"]
+            EFI_F["Efigas: Gestion Diaria Outbound - Efigas.xlsx (Outbound)"]
+            GC_F["Gas Caribe: Inbound (Mensual) + Outbound (2 Libros)"]
+            SUR_F["Surtigas: Histórico Ene-Jun + Continuidad Jul-Oct + Outbound (3 Libros)"]
         end
-        subgraph Diario ["Gestión Diaria (Operación)"]
-            G1["Gasera 1 (Gestión Diaria)"]
-            G2["Gasera 2 (Gestión Diaria)"]
-            G3["Gasera 3 (Gestión Diaria)"]
-            G4["Gasera 4 (Gestión Diaria)"]
-            G5["Gasera 5 (Gestión Diaria)"]
-            G6["Gasera 6 (Gestión Diaria)"]
+        subgraph SP_Live ["SharePoint En Vivo"]
+            GDO_F["GDO: Registro en Vivo Asesores (Inbound + Out + PQRS + Abandono)"]
         end
-        BD["Base de Datos Centralizada (Futura/En Proceso)"]
+        subgraph DB_Local ["Persistencia Local Actual"]
+            BD_Old["Base Acumulada Local (Desactualizada / Desconectada)"]
+        end
     end
 
-    subgraph Ingestion ["2. Ingesta y Captura"]
-        LoadBA["Lectura y Perfilado de Base Acumulada"]
-        RawExcel["Lectura Hojas / Rangos Gestión Diaria"]
-        DBSync["Conexión y Extracción BD"]
+    subgraph CapaIngesta ["2. Capa de Ingesta y Extracción"]
+        SyncScript["Script de Ingesta Automatizada / Sincronización Programada"]
+        HistLoader["Módulo de Evaluación y Carga Histórica"]
     end
 
-    subgraph Conciliacion ["3. Empalme y Reconciliación"]
-        MergeKey["Cruce por Llave Común (ID_Contrato / ID_Gestion / Cliente)"]
-        CheckGap["Identificación de Desfase Temporal / Brecha de Datos"]
+    subgraph CapaHomologacion ["3. Capa de Calidad, Limpieza y Homologación"]
+        ValFechas["Normalización Temporal:\n- CEO: FECHA INGRESO LLAMADA\n- Efigas: FECHA DE EJECUCION (ignora FECHA BASE)\n- Gas Caribe: FECHA DE ATENCION / MES\n- Surtigas: FECHA DE LLAMADA\n- GDO: Registro en Vivo"]
+        HomologCat["Homologación de Estructuras:\n- GDO: 'informativo' -> PQRS\n- Unificación Cabinas: Inbound vs Outbound\n- Tratamiento de Abandono (Solo Inbound)"]
+        DataQuality["Validación de Calidad (Deduplicación, Hash PK, Tipos)"]
     end
 
-    subgraph Auditoria ["4. Capa de Validación y Calidad"]
-        ValFormat["Validación de Estructura y Tipos"]
-        CheckDups["Detección de Duplicados e Inconsistencias"]
-        CheckNulls["Gestión de Registros Nulos / Vacíos"]
+    subgraph CapaCentral ["4. Base de Datos Centralizada (Staging + Prod)"]
+        DB_Staging["Capa Staging (Tablas Crudas por Gasera)"]
+        DB_Core["Capa Core / Consolidada (Modelo Unificado Multigasera)"]
     end
 
-    subgraph Transformacion ["5. Homologación y Transformación"]
-        StdCat["Estandarización de Catálogos (Estados / Motivos)"]
-        MapGaseras["Etiquetado y Mapeo por Gasera"]
-        CalcMetrics["Cálculo de Métricas y KPIs Diarios"]
+    subgraph FuturoOCM ["5. Fase Definitiva: Conexión Directa OCM"]
+        OCM_API["Plataforma OCM (Omnichannel Contact Manager)\n(Telefonía Cloud - Fin del uso de Excel)"]
     end
 
-    subgraph Storage ["6. Capa Analítica / Consolidado"]
-        Staging["Tablas Consolidadas (Histórico + Diario Unificado)"]
+    subgraph Consumo ["6. Visualización y Reportería"]
+        DashDaily["Dashboard de Gestión Diaria (Retención)"]
+        AlertsRep["Reportes de Nivel de Servicio y Abandono"]
     end
 
-    subgraph Consumo ["7. Salidas y Visualización"]
-        DashDaily["Dashboard de Retención Diario"]
-        RepMgmt["Reportes Operativos y Gerenciales"]
-    end
+    CEO_F --> SyncScript
+    EFI_F --> SyncScript
+    GC_F --> SyncScript
+    SUR_F --> SyncScript
+    GDO_F --> SyncScript
+    BD_Old --> HistLoader
 
-    BA --> LoadBA
-    G1 --> RawExcel
-    G2 --> RawExcel
-    G3 --> RawExcel
-    G4 --> RawExcel
-    G5 --> RawExcel
-    G6 --> RawExcel
-    BD --> DBSync
+    HistLoader --> ValFechas
+    SyncScript --> ValFechas
+    ValFechas --> HomologCat --> DataQuality
+    DataQuality --> DB_Staging --> DB_Core
 
-    LoadBA --> MergeKey
-    RawExcel --> MergeKey
-    DBSync --> MergeKey
-    MergeKey --> CheckGap --> ValFormat
-    ValFormat --> CheckDups --> CheckNulls
-    CheckNulls --> StdCat --> MapGaseras --> CalcMetrics
-    CalcMetrics --> Staging
-    Staging --> DashDaily
-    Staging --> RepMgmt
+    %% Conexión Definitiva OCM
+    OCM_API -.->|Sustitución programada de Excel| DB_Core
+
+    DB_Core --> DashDaily
+    DB_Core --> AlertsRep
 ```
 
 ---
 
-## 2. Etapas Detalladas del Flujo
+## 2. Etapas Detalladas del Flujo de Datos
 
-### Fase 1: Ingesta (Data Ingestion)
-* **Fuentes:** Archivos Excel locales o compartidos por cada gasera + consultas a base de datos.
-* **Frecuencia:** Diaria.
-* **Riesgos analíticos a controlar:**
-  * Variabilidad en el nombre de las columnas entre versiones de archivo.
-  * Presencia de encabezados múltiples o filas combinadas en Excel.
-  * Cambios de codificación (UTF-8, Latin-1, ANSI).
+### Etapa 1: Ingesta de Fuentes Heterogéneas
+* **SharePoint Operativo:** Los asesores y supervisores alimentan carpetas por gasera en SharePoint.
+  * **Casos particulares de lectura:**
+    * **CEO:** Lectura de pestañas `Gestion Diaria Inbound Ceo` y `Abandono`.
+    * **Efigas:** Lectura de pestaña única `base efigas`.
+    * **Gas Caribe:** Lectura multi-pestaña por mes en libro Inbound + lectura de libro Outbound.
+    * **GDO:** Lectura directa del archivo de validación en vivo.
+    * **Surtigas:** Fusión de libro histórico recuperado (Ene-Jun) con libro de continuidad (Jul-Oct) y libro Outbound.
+* **Base Acumulada Local:** Se someterá al plan de decisión (Truncar, Modificar o Reemplazar) para la carga masiva inicial.
 
-### Fase 2: Validación y Limpieza (Data Quality & Cleansing)
-* **Validaciones obligatorias:**
-  * Formato de fechas consistente (evitar ambigüedad DD/MM vs MM/DD).
-  * Limpieza de strings (espacios extras, caracteres especiales, mayúsculas/minúsculas).
-  * Unicidad de registros según la clave de gestión definida.
+### Etapa 2: Reglas de Transformación y Homologación Obligatorias
+1. **Regla de Filtro de Fechas en Efigas:**
+   * La columna `FECHA BASE` contiene la fecha de asignación/carga del lote. **Debe descartarse**.
+   * La columna analítica válida es `FECHA DE EJECUCION`.
+2. **Regla de Homologación en GDO:**
+   * La pestaña `informativo` debe ser absorbida bajo la categoría **PQRS Escritas**, estandarizando sus campos al modelo de reclamos.
+3. **Regla de Tráfico (Inbound vs Outbound):**
+   * Las llamadas de **Abandono** aplican estrictamente a la operación Inbound (CEO, Gas Caribe, GDO, Surtigas). No existen en Outbound (Efigas ni registros Out).
+4. **Normalización de Formatos de Fecha:**
+   * Unificación de columnas de fecha heterogéneas (`FECHA INGRESO LLAMADA`, `FECHA DE ATENCION`, `FECHA DE LLAMADA`, `FECHA DE EJECUCION`) a un formato estándar `YYYY-MM-DD HH:MM:SS`.
 
-### Fase 3: Homologación de Negocio (Business Mapping)
-* Unificación de conceptos entre las 5 o 6 gaseras:
-  * ¿Cómo llama cada gasera al estado "Retenido"? (Ej: "Éxito", "Efectivo", "Retención Lograda").
-  * ¿Cómo clasifica a los no contactados?
-  * Homologación de motivos de retiro / reclamo.
+### Etapa 3: Almacenamiento Centralizado (DB Relacional)
+* **Tabla Staging:** Carga espejo de cada hoja/gasera sin transformaciones destructivas.
+* **Tabla Hechos (Fact_Gestion_Diaria):** Tabla transaccional consolidada donde cada registro contiene:
+  * `id_gestion` (PK sintética)
+  * `gasera` (CEO, EFIGAS, GAS_CARIBE, GDO, SURTIGAS)
+  * `tipo_cabina` (INBOUND, OUTBOUND)
+  * `subtipo_gestion` (ATENCION, ABANDONO, PQRS)
+  * `fecha_gestion` (Fecha unificada)
+  * `campos_operativos` (Contrato, Agente, Tipificación, Retención, etc.)
 
-### Fase 4: Almacenamiento y Salida (Data Serving)
-* Generación del dataset maestro unificado para alimentar el tablero de control sin duplicidad de esfuerzo.
-
----
-
-## 3. Matriz de Control de Calidad del Dato
-* [ ] Auditoría de integridad referencial.
-* [ ] Conteo de registros input vs output por gasera.
-* [ ] Registro de logs de rechazo o inconsistencias (registros con error para retroalimentación operativa).
+### Etapa 4: Transición Estratégica hacia OCM
+* Se establece una **fecha límite operativa** para el llenado de planillas Excel.
+* Una vez desplegado **OCM (Omnichannel Contact Manager)**, la ingesta pasará a ser directa por API / base de datos del contact center cloud hacia la DB central de Promigas, eliminando por completo los errores de transcripción humana en Excel.
