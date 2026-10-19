@@ -118,9 +118,14 @@ que están citadas en cada documento.
 
 ---
 
-## 6. 🔒 Seguridad y manejo de datos sensibles
+## 6. 🔒 Estándar de Seguridad del Proyecto
 
 > **Esta sección NO va en el README público.** Es una referencia interna para el equipo.
+>
+> **Origen:** requisito de la junta directiva — *todo proyecto debe tener una brecha de
+> seguridad altísima*. Aplica a documentación, conexión a DB y cualquier artefacto futuro.
+
+### 6.1 Reglas base (credenciales y acceso)
 
 | # | Regla | Detalle |
 | ---: | :--- | :--- |
@@ -128,6 +133,49 @@ que están citadas en cada documento.
 | S-02 | **El usuario de conexión no es superusuario** | No tiene permiso de escritura sobre los esquemas de producción verificados. |
 | S-03 | **`ocm_retencion.agent.pass` contiene credenciales en texto plano** | Hash base64 reversible. **No extraer ni copiar** ese campo a ningún artefacto del proyecto. |
 | S-04 | **Datos personales en varias tablas** | Nombre, documento, teléfono y dirección están presentes. Aplicar el **principio de minimización** al exponerlos en reportes. |
+| S-05 | **Escaneo de secretos antes de cada commit** | Verificar que el diff no contenga host, usuario, contraseña, tokens ni rutas internas. |
+| S-06 | **Solo placeholders en artefactos públicos** | README y docs muestran `<motor>`, `<host>`, `<usuario>`. Nunca valores reales. |
+
+### 6.2 Caché y control de acceso a datos
+
+| # | Regla | Detalle |
+| ---: | :--- | :--- |
+| S-07 | **Nunca cachear datos sensibles en el cliente** | Respuestas HTTP con `Cache-Control: no-store, no-cache, must-revalidate` para cualquier endpoint que devuelva datos personales o de gestión. |
+| S-08 | **Headers de seguridad obligatorios** | `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Content-Security-Policy`. |
+| S-09 | **Sin datos sensibles en URLs** | Nunca pasar PII ni credenciales por query params. |
+| S-10 | **Sesiones y tokens con expiración corta** | Refresh tokens rotativos; access tokens con TTL mínimo. |
+| S-11 | **Principio de mínimo privilegio** | Cada rol solo ve las tablas y columnas que necesita. Ningún rol compartido. |
+
+### 6.3 Cifrado y transmisión
+
+| # | Regla | Detalle |
+| ---: | :--- | :--- |
+| S-12 | **Solo conexiones cifradas** | PostgreSQL con `sslmode=require`. Nunca contraseñas o datos en texto plano por HTTP. |
+| S-13 | **Cifrado en reposo** | Las copias de seguridad y los dumps deben ir cifrados. |
+| S-14 | **No loguear datos personales** | Los logs no contienen nombre, documento, teléfono ni dirección de usuarios. |
+
+### 6.4 Datos personales y reportes
+
+| # | Regla | Detalle |
+| ---: | :--- | :--- |
+| S-15 | **Minimización en reportes** | Mostrar solo lo necesario. Si un KPI no necesita el nombre del usuario, no se expone. |
+| S-16 | **Seudonimización cuando sea posible** | Reemplazar identificadores directos por IDs en reportes agregados. |
+| S-17 | **Derecho al olvido** | Definir procedimiento para atender solicitudes de supresión (Ley 1581 de 2012). |
+
+### 6.5 Verificación
+
+```bash
+# Antes de cada commit: verificar que .env está ignorado
+git check-ignore -v database/.env
+
+# Antes de cada push: verificar que no haya secretos en el diff
+git diff --cached | grep -E "(password|host|token|api[_-]?key|secret)" \
+  && echo "ALERTA: posible secreto en el diff" || echo "OK"
+
+# Verificar que el README no contiene valores reales
+grep -E "(DataCenter_Promigas|20\.7\.15\.40|samuel_mena|5432)" README.md \
+  && echo "ALERTA: valor real en README" || echo "OK"
+```
 
 ---
 
