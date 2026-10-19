@@ -51,47 +51,50 @@ que convierte esos datos en **indicadores de gestión**: la fórmula exacta, la 
 | **3** | **Total Outbound** | Gestiones de salida (la cabina llama al cliente) | `COUNT(*) WHERE sentido = 'OUT'` | `fact_gestion` | 🟡 idem |
 | **4** | **Registros Aptos** | Gestiones cuyo resultado es un resultado APTA | `COUNT(*) WHERE es_apto = TRUE` | `fact_gestion` → `dim_resultado` | 🟠 Requiere cerrar la cola de `POR_REVISAR` (B-03b) |
 | **5** | **Registros No Aptos** | Gestiones cuyo resultado NO es apto | `COUNT(*) WHERE es_apto = FALSE` | `fact_gestion` → `dim_resultado` | 🟠 idem |
-| **6** | **Total Retenciones** | Gestiones que terminaron en retención | ⚠️ **Ver nota 1** | `fact_gestion` → `resultado_normalizado = 'retenido'` | 🔴 **Semántica por confirmar** (H-22) |
-| **7** | **% Retención** | Proporción de gestiones retenidas | **El negocio tiene la fórmula; se compartirá cuando se aborde back/front** | — | 🔴 **Pendiente la fórmula** |
+| **6** | **Total Retenciones** | Resultados aptos que representan una gestión completada | `COUNT(*) WHERE resultado_normalizado IN ('retenido', 'cancelado + venta')` | `fact_gestion` | ✅ **Definido** |
+| **7** | **% Retención** | Proporción de aptos que se retuvieron | `DIVIDE([Total Retenciones], [Total Aptos], 0)` | — | ✅ **Definido** |
 
-### ⚠️ Notas de análisis que el negocio debe confirmar (no bloqueadas, pero críticas)
+### ✅ Fórmulas corregidas por el negocio (19-oct-2026)
 
-> **Nota 1 — «Total Retenciones» NO es lo mismo que «Registros Aptos» (H-22).**
-> Este es el punto más importante de todo el documento. De los **4 resultados APTA**, solo
-> **1** es una retención real (`retenido`). Los otros 3 implican **cancelación**:
->
-> | Resultado APTA (D-01) | ¿Es retención? | Peso en los datos de hoy |
-> | :--- | :---: | ---: |
-> | `retenido` | ✅ Sí | ~16% de los registros aptos |
-> | `cancelado` | ❌ No | 63.6% de todas las filas |
-> | `cancelado + venta` | ❌ No | minoritario |
-> | `cancelado + reintegro` | ❌ No | minoritario |
->
-> **Consecuencia:** `Registros Aptos` (KPI 4) y `Total Retenciones` (KPI 6) son **dos
-> números distintos** y ambos se publican. Si alguien presenta «Registros Aptos» como
-> «Retenciones», el reporte está equivocado. **La fórmula exacta del KPI 6 la tiene el
-> negocio** y se registrará aquí cuando la comparta.
+> **Total Retenciones** = `retenido` + `cancelado + venta`
 
-> **Nota 2 — los tres totales deben cuadrar entre sí.**
-> `Total general` debería ser igual a `Total Inbound + Total Outbound`. **Pero hoy no
-> necesariamente es así**, porque existen tipos de gestión que no son ni inbound ni
-> outbound: `gdo_informativo` (la bitácora), los **abandonos** y las **PQRS**.
-> **Pregunta pendiente:** ¿el Total general incluye abandonos y PQRS, o solo llamadas?
-> Eso cambia el denominador de todo lo demás.
+Estos son **2 de los 3 resultados APTA que no implican cancelación del todo**:
+- `retenido` — el cliente se quedó
+- `cancelado + venta` — el cliente canceló pero compró algo nuevo
 
-> **Nota 3 — % Retención necesita su denominador (regla K-06).**
-> Cuando el negocio comparta la fórmula, hay que verificar qué hay en el denominador:
-> ¿Total general? ¿Registros Aptos? ¿Inbound? Un % Retención calculado sobre denominadores
-> distintos produce números que **no se pueden comparar entre gaseras**.
+**No se incluye**: `cancelado + reintegro` (es un reintegro, no una retención nueva).
 
-> **Nota 4 — APTA y NO APTA deben sumar el total, sin hueco.**
-> `Registros Aptos + Registros No Aptos` debe ser igual a `Total general`. Si existe
-> `POR_REVISAR` sin clasificar, **la suma no cuadra** y el KPI 4 y 5 se subreportan. Por
-> eso la acción B-03b (ciclo de aprendizaje continuo) es un prerequisito de estos dos KPIs.
+> **% Retención** = `DIVIDE([Total Retenciones], [Total Aptos], 0)`
+
+Siempre sobre el **total de aptos**, no sobre el total general. Si no hay aptos, retorna 0.
+
+### ⚠️ Notas pendientes de confirmar con el negocio
+
+> **Nota 1 — Inbound/Outbound por gasera.**
+> Cada gasera maneja su propio informe con gráficos distintos. Las gaseras que tienen
+> **inbound y outbound** (o solo uno de los dos) usan la clasificación por **cabina**.
+> Al filtrar por gasera y cabina, el KPI de totales debe traer solo los registros de esa
+> gasera en esa cabina. Las gaseras que no manejan cabinas (GDO, parcialmente Surtigas)
+> tienen su propia estructura. Ver §4 para el andamiaje de KPIs adicionales.
+
+> **Nota 2 — Total general = Inbound + Outbound (confirmado).**
+> Abandono, PQRS e informativo son **apartes** que no entran en los totales de llamadas.
+> Cada gasera decide qué apartes incluye en su reporte. Gases del Caribe, por ejemplo,
+> solo pide gestión diaria (llamadas, retenidos, etc.), sin informativo ni PQRS.
+
+> **Nota 3 — No debe existir `POR_REVISAR`.**
+> Ya está clasificado. Los casos que hoy quedan en `POR_REVISAR` son residuales y deben
+> cerrarse con el ciclo de aprendizaje (B-03b). Mientras existan, `Apta + No Apta ≠ Total general`.
 
 ---
 
-## 4. Andamiaje de KPIs (propuesta a discutir)
+## 4. Andamiaje de KPIs adicionales (propuesta a discutir)
+
+> 🔒 **SECCIÓN CONGELADA POR AHORA.** El negocio confirmó que hay **dos ingresos a la DB**:
+> primero todo lo registrado en **2026 por todas las gaseras**, y luego los datos de **OCM**
+> para que los asesores dejen de usar Excel. No se definen KPIs adicionales hasta que
+> esos dos ingresos estén completos. Este andamiaje queda como referencia de lo que
+> **podría** medirse, no de lo que se va a medir.
 
 | # | KPI | Concepto canónico | Fuente | Granularidad | Estado |
 | ---: | :--- | :--- | :--- | :--- | :--- |
