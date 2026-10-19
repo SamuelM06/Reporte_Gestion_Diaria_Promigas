@@ -1,26 +1,44 @@
 """
-Módulo de Conexión a Base de Datos - Plantilla Base
-Reporte Gestión Diaria - Promigas
+Módulo de Conexión a Base de Datos - Reporte Gestión Diaria Promigas
 
-Este script servirá como plantilla de conexión cuando se reciban las credenciales formales.
-Utiliza variables de entorno para evitar almacenar contraseñas en código fuente.
+Conexión a `DataCenter_Promigas` (PostgreSQL 16.14) con credenciales en variables
+de entorno, para no almacenar contraseñas en código fuente.
+
+Configuración:
+    1. Copiar `database/.env.example` a `database/.env` y completar los valores.
+    2. `python database/conexion_template.py` para probar la conexión.
+    3. `python database/inspeccion_esquema.py --todo` para la auditoría del esquema.
+
+Esquemas disponibles en la instancia: `gestion_diaria` (esquema de trabajo),
+`ocm_retencion` (réplica OCM), `reportes` (capa core), `siniestros`, `auditoria`
+(requiere `GRANT USAGE`), `public`.
 """
 
 import os
+import sys
 import urllib.parse
+from pathlib import Path
 from typing import Optional
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
-# Cargar variables de entorno desde el archivo .env
-load_dotenv()
+# Evitar UnicodeEncodeError en consolas Windows (cp1252) al imprimir emojis/acentos
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-DB_TYPE = os.getenv("DB_TYPE", "mssql").lower()
+# Cargar variables de entorno desde el archivo .env (en la carpeta de este módulo)
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR.parent / ".env")
+
+DB_TYPE = os.getenv("DB_TYPE", "postgresql").lower()
 DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "1433")
+DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "")
+DB_SCHEMA = os.getenv("DB_SCHEMA", "gestion_diaria")
 DB_USER = os.getenv("DB_USER", "")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_ODBC_DRIVER = os.getenv("DB_ODBC_DRIVER", "ODBC Driver 17 for SQL Server")
@@ -89,6 +107,22 @@ def query_to_dataframe(sql_query: str, params: Optional[dict] = None) -> pd.Data
     return df
 
 
+def list_tables(schema: Optional[str] = None) -> pd.DataFrame:
+    """
+    Lista las tablas de un esquema con su número de filas estimado.
+    """
+    schema = schema or DB_SCHEMA
+    sql = f"""
+        SELECT table_schema, table_name, table_type
+        FROM information_schema.tables
+        WHERE table_schema = :schema
+        ORDER BY table_name
+    """
+    return query_to_dataframe(sql, params={"schema": schema})
+
+
 if __name__ == "__main__":
     print("Iniciando prueba de conexión con la plantilla de configuración...")
-    test_connection()
+    if test_connection():
+        print(f"\nEsquema de trabajo: {DB_SCHEMA}")
+        print(list_tables().to_string(index=False))
