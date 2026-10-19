@@ -118,7 +118,20 @@ que están citadas en cada documento.
 
 ---
 
-## 6. Próximo paso
+## 6. 🔒 Seguridad y manejo de datos sensibles
+
+> **Esta sección NO va en el README público.** Es una referencia interna para el equipo.
+
+| # | Regla | Detalle |
+| ---: | :--- | :--- |
+| S-01 | **`.env` está en `.gitignore`** | Verificar con `git check-ignore -v database/.env` antes de cualquier commit. |
+| S-02 | **El usuario de conexión no es superusuario** | No tiene permiso de escritura sobre los esquemas de producción verificados. |
+| S-03 | **`ocm_retencion.agent.pass` contiene credenciales en texto plano** | Hash base64 reversible. **No extraer ni copiar** ese campo a ningún artefacto del proyecto. |
+| S-04 | **Datos personales en varias tablas** | Nombre, documento, teléfono y dirección están presentes. Aplicar el **principio de minimización** al exponerlos en reportes. |
+
+---
+
+## 7. Próximo paso
 
 **Resolver A-11** (¿el reporte mide productividad por empresa operadora o por asesor?) y
 **cerrar la cola de 43 variantes** del catálogo (≈4-5 h de revisión humana).
