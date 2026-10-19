@@ -1,7 +1,7 @@
 # 📋 Plan 03: Definición de KPIs
 
 **Proyecto:** Gestión Diaria Promigas
-**Estado:** 🟡 **Parcialmente definido** — 7 KPIs comunes definidos por el negocio (§3); fórmulas pendientes de % Retención y Total Retenciones
+**Estado:** ✅ **Definido** — 7 KPIs comunes con fuente y fórmula confirmadas por el negocio (19-oct-2026); pendientes metas y umbrales por gasera
 **Alcance previsto:** definición formal de los indicadores del reporte de gestión diaria
 **Fecha de creación:** 19 de octubre de 2026
 
@@ -121,7 +121,7 @@ Siempre sobre el **total de aptos**, no sobre el total general. Si no hay aptos,
 | :--- | :--- |
 | K-01 | Cada KPI declara su **fuente exacta** (tabla + columna) y su **fórmula** |
 | K-02 | Cada KPI se puede calcular **con la data de hoy**, sin trabajo manual |
-| K-03 | Los KPIs de retention **no** se publican si hay `POR_REVISAR` sin reportar |
+| K-03 | **No debe existir `POR_REVISAR`:** ya está clasificado. Si aparece, el reporte se pausa hasta cerrar la cola (B-03b) |
 | K-04 | Todo KPI se puede desagregar por gasera **y** su nivel de comparabilidad se declara |
 | K-05 | Ningún KPI usa `anio` (año de venta) para un periodo de gestión |
 | K-06 | Todo KPI de porcentaje declara su **denominador** explícitamente |
@@ -138,15 +138,10 @@ Siempre sobre el **total de aptos**, no sobre el total general. Si no hay aptos,
 2. ✅ **¿Son comunes a todas las gaseras?** — sí, son los mismos 7 en las 5 gaseras,
    aunque cada gasera use gráficos distintos sobre ellos.
 
-### 🔴 Aún pendiente del negocio
+### 🟠 Aún pendiente del negocio
 
-1. **Fórmula exacta de «Total Retenciones»** — ver Nota 1 de la §3.
-2. **Fórmula y denominador de «% Retención»** — el negocio la tiene y la compartirá
-   cuando se aborde back/front.
-3. **¿Total general = Inbound + Outbound?** — ¿entran abandono y PQRS en el total?
-   (Nota 2).
-4. **¿Hay umbrales o metas por gasera?** — por ejemplo: «% Retención objetivo ≥ X%».
-5. **¿Quién consume cada KPI y con qué periodicidad?** — diario, semanal, mensual.
+1. **¿Hay umbrales o metas por gasera?** — por ejemplo: «% Retención objetivo ≥ X%».
+2. **¿Quién consume cada KPI y con qué periodicidad?** — diario, semanal, mensual.
 
 ### 🟠 Decisiones que siguen abiertas (registro)
 

@@ -1,4 +1,4 @@
-﻿# 04. Hallazgos y Backlog Analítico
+# 04. Hallazgos y Backlog Analítico
 
 **Proyecto:** Gestión Diaria Promigas
 **Alcance:** esquema `gestion_diaria` de `DataCenter_Promigas` (PostgreSQL 16.14)
@@ -135,17 +135,21 @@ carga, (b) dos asesores que atendieron al mismo cliente, o (c) multipoliza. (b) 
 ### 🔴 H-22 — `APTA` no significa "retención"
 
 **Evidencia** — la decisión D-01 define 4 resultados APTA, y **3 de los 4 implican
-cancelación**:
+cancelación**. El negocio confirmó la fórmula correcta el 19-oct-2026:
 
-| Resultado APTA | Filas aproximadas | Lectura de negocio |
-| :--- | ---: | :--- |
-| `cancelado` | ~1.900 | El usuario canceló el servicio |
-| `cancelado + venta` | ~1.100 | Canceló **y** se concretó una venta → sí hay retención de cartera |
-| `cancelado + reintegro` | ~950 | Canceló **y** se gestionó un reintegro |
-| `retenido` | ~3.100 | El usuario fue retenido |
+| Resultado APTA | Filas aprox. | ¿Cuenta en Total Retenciones? | Lectura de negocio |
+| :--- | ---: | :---: | :--- |
+| `retenido` | ~3.100 | ✅ Sí | El usuario fue retenido |
+| `cancelado + venta` | ~1.100 | ✅ Sí | Canceló **y** se concretó una venta → sí hay retención |
+| `cancelado` | ~1.900 | ❌ No | El usuario canceló sin venta ni reintegro |
+| `cancelado + reintegro` | ~950 | ❌ No | Canceló y se gestionó un reintegro |
 
-`CANCELADO` es el **63.6% de las filas**. Mezclar "canceló" con "se quedó" en la misma
-etiqueta y llamarla "retención" **invierte el indicador**.
+**Fórmula confirmada por el negocio:**
+- **Total Retenciones** = `retenido` + `cancelado + venta` (2 de los 4 APTA)
+- **% Retención** = `DIVIDE([Total Retenciones], [Total Aptos], 0)`
+
+`CANCELADO` (sin venta) es el resultado individual más común. Llamar "retención" a los
+4 APTA sin distinción **invierte el indicador**.
 
 **Impacto** Es el riesgo de comunicación más alto del proyecto (R-10 en el doc 010).
 **Acción:** B-06 (documentar la semántica literal en el dashboard). **Resuelto:** 📌 Aclarado por D-01/D-02
