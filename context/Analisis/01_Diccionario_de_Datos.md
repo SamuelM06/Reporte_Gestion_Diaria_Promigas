@@ -77,7 +77,25 @@ Las cifras son reproducibles con `python database/inspeccion_esquema.py --todo`.
 
 **Total: 48,036 filas de datos.**
 
-### 2.1 Volumetría por familia
+### 2.1 Cómo distinguir Inbound vs Outbound
+
+> **El nombre de la tabla es la fuente de verdad.** Los nombres `*_inbound` y
+> `*_outbound` indican el sentido de la gestión. **No dependa de la columna `cabina`**
+> para filtrar: en Caribe está 100% nula, en Surti outbound tiene dos formatos
+> (`OUTBOUND` y `outbound`), y en GDO la columna no existe.
+
+| Tabla | Sentido | Columna `cabina` | Confiable |
+| :--- | :--- | :--- | :---: |
+| `ceo_inbound` | Inbound | `INBOUND` (100%) | ✅ |
+| `caribe_inbound` | Inbound | **NULL** (100%) | ❌ |
+| `surti_inbound` | Inbound | `INBOUND` (100%) | ✅ |
+| `gdo_inbound` | Inbound | *no existe* | ❌ |
+| `efigas_outbound` | Outbound | `OUTBOUND` (100%) | ✅ |
+| `caribe_outbound` | Outbound | **NULL** (100%) | ❌ |
+| `surti_outbound` | Outbound | `OUTBOUND` + `outbound` (19 filas) | ⚠️ |
+| `gdo_outbound` | Outbound | *no existe* | ❌ |
+
+### 2.2 Volumetría por familia
 
 | Familia | Tablas | Filas |
 | :--- | :---: | ---: |
