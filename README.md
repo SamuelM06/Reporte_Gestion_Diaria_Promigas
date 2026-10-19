@@ -22,11 +22,11 @@ Diseñar un sistema unificado y robusto de analítica y reportería diaria que p
 
 | Parámetro | Valor |
 | :--- | :--- |
-| **Motor** | `<motor>` (ver `database/.env.example`) |
-| **Host / Puerto** | `<host>:<puerto>` (ver `database/.env`) |
-| **Base de datos** | `<nombre_base_datos>` (ver `database/.env`) |
-| **Esquema de trabajo** | `<esquema>` (ver `database/.env`) |
-| **Usuario** | `<usuario>` (ver `database/.env`) |
+| **Motor** | `<motor>` |
+| **Host / Puerto** | `<host>:<puerto>` |
+| **Base de datos** | `<nombre_base_datos>` |
+| **Esquema de trabajo** | `<esquema>` |
+| **Usuario** | `<usuario>` |
 | **Estado** | ✅ **Conectada y auditada** (19-oct-2026) |
 
 **Alcance del proyecto:** 18 tablas, 5 vistas (4 legibles), 4 funciones y **48.036 filas de
