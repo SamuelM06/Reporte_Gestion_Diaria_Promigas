@@ -22,11 +22,11 @@ Diseñar un sistema unificado y robusto de analítica y reportería diaria que p
 
 | Parámetro | Valor |
 | :--- | :--- |
-| **Motor** | PostgreSQL 16.14 |
-| **Host / Puerto** | Definidos en `database/.env` (no versionados) |
-| **Base de datos** | `DataCenter_Promigas` |
-| **Esquema de trabajo** | `gestion_diaria` |
-| **Usuario** | Definido en `database/.env` (no versionado) |
+| **Motor** | `<motor>` (ver `database/.env.example`) |
+| **Host / Puerto** | `<host>:<puerto>` (ver `database/.env`) |
+| **Base de datos** | `<nombre_base_datos>` (ver `database/.env`) |
+| **Esquema de trabajo** | `<esquema>` (ver `database/.env`) |
+| **Usuario** | `<usuario>` (ver `database/.env`) |
 | **Estado** | ✅ **Conectada y auditada** (19-oct-2026) |
 
 **Alcance del proyecto:** 18 tablas, 5 vistas (4 legibles), 4 funciones y **48.036 filas de
