@@ -1,7 +1,7 @@
 # 📋 Plan 03: Definición de KPIs
 
 **Proyecto:** Gestión Diaria Promigas
-**Estado:** ⬜ **Pendiente de redactar con el negocio**
+**Estado:** 🟡 **Parcialmente definido** — 7 KPIs comunes definidos por el negocio (§3); fórmulas pendientes de % Retención y Total Retenciones
 **Alcance previsto:** definición formal de los indicadores del reporte de gestión diaria
 **Fecha de creación:** 19 de octubre de 2026
 
@@ -15,7 +15,12 @@ que convierte esos datos en **indicadores de gestión**: la fórmula exacta, la 
 
 > **Este documento no se puede redactar solo con evidencia técnica.** Cada KPI requiere
 > una decisión de negocio sobre qué se quiere medir. La sección §3 deja preparado el
-> andamiaje.
+> andamiaje, y la §4 registra los que el negocio ya definió.
+
+> ⚠️ **No hay alcance de front ni de back definido todavía.** No se sabe si será un portal
+> por gasera, una vista por gasera o un aplicativo por gasera. **Este documento solo define
+> indicadores**; cualquier decisión sobre la interfaz queda fuera de alcance hasta que el
+> negocio la defina.
 
 ---
 
@@ -33,7 +38,60 @@ que convierte esos datos en **indicadores de gestión**: la fórmula exacta, la 
 
 ---
 
-## 3. Andamiaje de KPIs (propuesta a discutir)
+## 3. KPIs comunes a TODAS las gaseras (definidos por el negocio — 19-oct-2026) ✅
+
+> Fuente de esta definición: el equipo de negocio, en conversación directa del
+> 19-oct-2026. Son los **indicadores que toda gasera reporta por igual**, aunque cada
+> gasera maneja **gráficos distintos** sobre ellos.
+
+| # | KPI (nombre del negocio) | ¿Qué mide? | Fórmula | Fuente propuesta | Estado |
+| ---: | :--- | :--- | :--- | :--- | :--- |
+| **1** | **Total general** | Total de gestiones registradas en el periodo | `COUNT(*)` de gestiones | `fact_gestion` | 🟡 Falta confirmar el filtro de periodo y qué tipos de gestión entran |
+| **2** | **Total Inbound** | Gestiones de entrada (el cliente o la cabina originan la llamada) | `COUNT(*) WHERE sentido = 'IN'` | `fact_gestion` | 🟡 Falta confirmar si Inbound+Outbound = Total general |
+| **3** | **Total Outbound** | Gestiones de salida (la cabina llama al cliente) | `COUNT(*) WHERE sentido = 'OUT'` | `fact_gestion` | 🟡 idem |
+| **4** | **Registros Aptos** | Gestiones cuyo resultado es un resultado APTA | `COUNT(*) WHERE es_apto = TRUE` | `fact_gestion` → `dim_resultado` | 🟠 Requiere cerrar la cola de `POR_REVISAR` (B-03b) |
+| **5** | **Registros No Aptos** | Gestiones cuyo resultado NO es apto | `COUNT(*) WHERE es_apto = FALSE` | `fact_gestion` → `dim_resultado` | 🟠 idem |
+| **6** | **Total Retenciones** | Gestiones que terminaron en retención | ⚠️ **Ver nota 1** | `fact_gestion` → `resultado_normalizado = 'retenido'` | 🔴 **Semántica por confirmar** (H-22) |
+| **7** | **% Retención** | Proporción de gestiones retenidas | **El negocio tiene la fórmula; se compartirá cuando se aborde back/front** | — | 🔴 **Pendiente la fórmula** |
+
+### ⚠️ Notas de análisis que el negocio debe confirmar (no bloqueadas, pero críticas)
+
+> **Nota 1 — «Total Retenciones» NO es lo mismo que «Registros Aptos» (H-22).**
+> Este es el punto más importante de todo el documento. De los **4 resultados APTA**, solo
+> **1** es una retención real (`retenido`). Los otros 3 implican **cancelación**:
+>
+> | Resultado APTA (D-01) | ¿Es retención? | Peso en los datos de hoy |
+> | :--- | :---: | ---: |
+> | `retenido` | ✅ Sí | ~16% de los registros aptos |
+> | `cancelado` | ❌ No | 63.6% de todas las filas |
+> | `cancelado + venta` | ❌ No | minoritario |
+> | `cancelado + reintegro` | ❌ No | minoritario |
+>
+> **Consecuencia:** `Registros Aptos` (KPI 4) y `Total Retenciones` (KPI 6) son **dos
+> números distintos** y ambos se publican. Si alguien presenta «Registros Aptos» como
+> «Retenciones», el reporte está equivocado. **La fórmula exacta del KPI 6 la tiene el
+> negocio** y se registrará aquí cuando la comparta.
+
+> **Nota 2 — los tres totales deben cuadrar entre sí.**
+> `Total general` debería ser igual a `Total Inbound + Total Outbound`. **Pero hoy no
+> necesariamente es así**, porque existen tipos de gestión que no son ni inbound ni
+> outbound: `gdo_informativo` (la bitácora), los **abandonos** y las **PQRS**.
+> **Pregunta pendiente:** ¿el Total general incluye abandonos y PQRS, o solo llamadas?
+> Eso cambia el denominador de todo lo demás.
+
+> **Nota 3 — % Retención necesita su denominador (regla K-06).**
+> Cuando el negocio comparta la fórmula, hay que verificar qué hay en el denominador:
+> ¿Total general? ¿Registros Aptos? ¿Inbound? Un % Retención calculado sobre denominadores
+> distintos produce números que **no se pueden comparar entre gaseras**.
+
+> **Nota 4 — APTA y NO APTA deben sumar el total, sin hueco.**
+> `Registros Aptos + Registros No Aptos` debe ser igual a `Total general`. Si existe
+> `POR_REVISAR` sin clasificar, **la suma no cuadra** y el KPI 4 y 5 se subreportan. Por
+> eso la acción B-03b (ciclo de aprendizaje continuo) es un prerequisito de estos dos KPIs.
+
+---
+
+## 4. Andamiaje de KPIs (propuesta a discutir)
 
 | # | KPI | Concepto canónico | Fuente | Granularidad | Estado |
 | ---: | :--- | :--- | :--- | :--- | :--- |
@@ -54,7 +112,7 @@ que convierte esos datos en **indicadores de gestión**: la fórmula exacta, la 
 
 ---
 
-## 4. Reglas que todo KPI debe cumplir
+## 5. Reglas que todo KPI debe cumplir
 
 | Regla | Descripción |
 | :--- | :--- |
@@ -68,17 +126,37 @@ que convierte esos datos en **indicadores de gestión**: la fórmula exacta, la 
 
 ---
 
-## 5. Qué se necesita del negocio para cerrarlo
+## 6. Qué pendía vs. qué ya está resuelto
 
-1. ¿Cuáles son los **5-8 indicadores** que la jefatura mira hoy en Power BI? (K-07 del doc 010)
-2. ¿Cómo se calcula cada uno exactamente? (fórmula y denominador)
-3. ¿Quién los consume y con qué periodicidad?
-4. ¿Qué se hace cuando el KPI de una gasera **no es comparable** con otra?
-5. ¿Hay umbrales o metas por gasera?
+### ✅ Resuelto por el negocio (19-oct-2026)
+
+1. ✅ **¿Cuáles son los indicadores?** — los 7 de la §3 (Total general, Total Inbound,
+   Total Outbound, Registros Aptos, Registros No Aptos, Total Retenciones, % Retención).
+2. ✅ **¿Son comunes a todas las gaseras?** — sí, son los mismos 7 en las 5 gaseras,
+   aunque cada gasera use gráficos distintos sobre ellos.
+
+### 🔴 Aún pendiente del negocio
+
+1. **Fórmula exacta de «Total Retenciones»** — ver Nota 1 de la §3.
+2. **Fórmula y denominador de «% Retención»** — el negocio la tiene y la compartirá
+   cuando se aborde back/front.
+3. **¿Total general = Inbound + Outbound?** — ¿entran abandono y PQRS en el total?
+   (Nota 2).
+4. **¿Hay umbrales o metas por gasera?** — por ejemplo: «% Retención objetivo ≥ X%».
+5. **¿Quién consume cada KPI y con qué periodicidad?** — diario, semanal, mensual.
+
+### 🟠 Decisiones que siguen abiertas (registro)
+
+| Decisión | Estado | Bloquea |
+| :--- | :---: | :--- |
+| **A-11** — productividad por empresa o por asesor | 🔴 | KPIs de operador (§4, KPI 6) |
+| **A-12** — abandono de GDO confiable | 🔴 | KPI de abandono |
+| **A-13** — `gdo_informativo`: bitácora o maestro | 🔴 | KPIs de PQRS |
+| **A-14** — campos obligatorios por gasera | 🟠 | KPIs con `localidad` / motivo |
 
 ---
 
-## 6. Impacto en otros documentos
+## 7. Impacto en otros documentos
 
 | Documento | Relación |
 | :--- | :--- |

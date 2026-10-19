@@ -64,8 +64,8 @@ Las credenciales reales están en `database/.env` (**ignorado por Git**).
 │   └── planes/
 │       ├── 01_Plan_Estructura.md              # Hoja de ruta por fases
 │       ├── 02_Plan_Migracion_y_Estrategia_DB.md # Estrategia + cuestionario respondido
-│       ├── 03_Definicion_de_KPIs.md           # ⬜ Pendiente de redactar con el negocio
-│       └── 04_Transicion_a_OCM.md             # ⬜ Pendiente de redactar
+│       ├── 03_Definicion_de_KPIs.md           # 🟡 7 KPIs definidos; fórmulas pendientes
+│       └── 04_Transicion_a_OCM.md             # 🟡 Delegado al compañero del equipo
 ├── database/
 │   ├── .env                                   # Credenciales reales (NO versionar)
 │   ├── .env.example                           # Plantilla versionada

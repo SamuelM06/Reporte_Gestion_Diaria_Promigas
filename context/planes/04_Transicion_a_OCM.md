@@ -1,10 +1,17 @@
 # 📋 Plan 04: Transición a OCM
 
 **Proyecto:** Gestión Diaria Promigas
-**Estado:** ⬜ **Pendiente de redactar**
+**Estado:** 🟡 **Delegado completamente al compañero del equipo** (confirmado 19-oct-2026)
+**Responsable:** compañero del equipo de gestión — no es un entregable de este proyecto
 **Alcance previsto:** casamiento entre las planillas de Excel y la plataforma OCM, y plan
 de desconexión progresiva de Excel
 **Fecha de creación:** 19 de octubre de 2026
+
+> ⚠️ **Este documento NO es un entregable del analista.** La transición a OCM está
+> **completamente a cargo del compañero** del equipo, y no es algo sencillo. Este
+> documento existe solo como **referencia de contexto** para el resto del proyecto:
+> registra las preguntas que OCM debe resolver y cómo afecta a los demás documentos.
+> No se requiere acción del analista hasta que el compañero le pida apoyo.
 
 ---
 
