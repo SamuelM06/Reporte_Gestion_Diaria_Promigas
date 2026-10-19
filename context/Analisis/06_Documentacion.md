@@ -71,12 +71,13 @@
 | 03 | `Analisis/01_Diccionario_de_Datos.md` | **Inventario columna por columna** de las 17 tablas: nombre original del Excel, tipo, nulos, distintos, significado, ejemplos + catálogos de tipificación | ✅ **Nuevo** |
 | 04 | `Analisis/02_Mapeo_Origen_Destino.md` | **Especificación de la ingesta**: cada columna del Excel → tabla y campo destino, con su transformación | ✅ **Nuevo** |
 | 05 | `Analisis/03_Modelo_Datos.md` | **Modelo en estrella**: vista actual, vista objetivo, migraciones SQL M0–M8 con criterios de aceptación | ✅ **Nuevo** |
-| 06 | `planes/03_Definicion_de_KPIs.md` | Definición de KPIs con el negocio | ⬜ **Falta redactar** |
-| 07 | `planes/04_Transicion_a_OCM.md` | Casamiento OCM×planilla y plan de apagado de Excel | ⬜ **Falta redactar** |
+| 06 | `planes/03_Definicion_de_KPIs.md` | Definición de KPIs con el negocio — 7 KPIs comunes definidos y confirmados | ✅ **Definido** |
+| 07 | `planes/04_Transicion_a_OCM.md` | Casamiento OCM×planilla y plan de apagado de Excel — delegado al compañero | 🟡 Delegado |
 | 08 | `Analisis/010_Registro_Decisiones_Riesgos.md` | Decisiones (D-01…D-10), propuestas (P-01…P-14), abiertas (A-01…A-15), inconsistencias, supuestos, riesgos, preguntas | ✅ Actualizado |
 | 09 | `Analisis/09_Normalizacion_y_Clasificacion.md` | Algoritmo de normalización, cola de revisión, DDL del catálogo maestro | ✅ Actualizado |
 | 10 | `Analisis/04_Hallazgos_y_Backlog.md` | 35 hallazgos con evidencia + backlog B-01…B-35 | ✅ **Nuevo** |
 | 11 | `Analisis/05_Calidad_de_Datos.md` | Perfil de calidad por tabla + 20 reglas de validación | ✅ **Nuevo** |
+| 12 | `Analisis/011_OCM_Configuracion_Llamadas.md` | **Matriz oficial de configuración OCM**: qué gaseras manejan inbound/outbound, líneas telefónicas y skills asignados | ✅ **Nuevo** |
 | — | `Analisis/06_Documentacion.md` | Este índice | ✅ |
 | — | `Analisis/07_Estructura_de_datos.md` | Inventario por gasera: hojas, campos clave, reglas operativas | ✅ |
 | — | `Analisis/08_Flujo_De_Datos.md` | Arquitectura de flujo de datos y flujo objetivo | ✅ |
