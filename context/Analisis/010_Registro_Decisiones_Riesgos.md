@@ -38,7 +38,7 @@ Este documento es la memoria del proyecto. Cada vez que el equipo decida algo, d
 
 | ID | Tema | Propuesta | Documento | Prioridad |
 |---|---|---|---|---|
-| P-01 | Estado adicional de clasificación | Agregar `POR_REVISAR` además de APTA y NO_APTA | 09 | 🔴 Alta |
+| ~~P-01~~ | ~~Estado adicional de clasificación~~ | **RECHAZADA (19-oct-2026):** un resultado es APTA o NO_APTA, no puede haber tercera clasificación. Si no entra en los 4 APTA, es NO_APTA | 09 | ✅ Descartada |
 | P-02 | Estructura de `clasificacion` | Opción B: separar `dim_resultado` y `resultado_variante` | 09 | 🟠 Media |
 | P-03 | Conservar texto original | Guardar `resultado_original` sin modificar en cada registro | 09 | 🔴 Alta |
 | P-04 | Aprendizaje de variantes | Las correcciones automáticas se agregan como variante con `validado = FALSE` | 09 | 🟡 Baja |
@@ -48,10 +48,15 @@ Este documento es la memoria del proyecto. Cada vez que el equipo decida algo, d
 | **P-08** | **Limpieza de artefactos de Excel** | Quitar tabuladores, `\n`, `\r` y `_x000D_` en el Paso 1 de limpieza | doc 02 §4 | 🟠 Media |
 | **P-09** | **Catálogo maestro de motivos** | Adoptar el catálogo de 52 valores de `gdo_inbound.subtipificacion` como vocabulario unificado | doc 01 §6.2 | 🟠 Media |
 | **P-10** | **Detección de sangrado de columnas en la ingesta** | Validar el dominio de cada columna y mandar a cuarentena lo que no aplique | doc 02 §6 | 🔴 Alta |
-| **P-11** | **Extender `fn_parse_fecha`** | Soportar `MMM-YY`, `DD/MM/YYYY HH:MM:SS AM/PM` y seriales de Excel. Hoy falla en el 63–100% de 4 tablas | doc 01 §3 | 🟠 Media |
+| **P-11** | **Extender `fn_parse_fecha`** | **Confirmado (19-oct-2026):** en Excel los formatos vienen como día/mes/año; en la BD se guardan como año/mes/día. `fn_parse_fecha` debe cubrir `DD/MM/YYYY`, `DD/MM/YYYY HH:MM:SS AM/PM`, `MMM-YY` y seriales de Excel, y normalizar todo a `YYYY-MM-DD HH:MM:SS` | doc 01 §3 | 🟠 Media |
 | **P-12** | **Bitácora de carga con hash del archivo** | Tabla `dim_carga` + `dim_origen` con `sha256` de cada Excel | doc 03 §6.2 | 🟠 Media |
 | **P-13** | **Cuarentena de registros** | Ningún registro se descarta en silencio; todo rechazo queda registrado con su regla | doc 03 §6.2 | 🟠 Media |
 | **P-14** | **Separar `anio_gestion` de `anio_venta`** | `anio` en las fuentes es el año de venta; usar `EXTRACT(YEAR FROM fecha_gestion)` | doc 03 §5 | 🟠 Media |
+
+> **Impacto de la P-01 descartada:** si no existe `POR_REVISAR`, la §4 del doc 09
+> (Estados de clasificación) queda invalidada. Los resultados no reconocidos deben
+> clasificarse como **NO_APTA** (no como POR_REVISAR), y el mecanismo de la cola de
+> revisión pasa a ser un **auditoría de calidad**, no un estado intermedio del registro.
 
 ### 1.3 Decisiones abiertas
 
