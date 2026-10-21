@@ -60,7 +60,9 @@ Las credenciales reales están en `database/.env` (**ignorado por Git**).
 │   │   ├── 07_Estructura_de_datos.md          # Inventario por gasera: hojas y campos clave
 │   │   ├── 08_Flujo_De_Datos.md               # Arquitectura de flujo de datos
 │   │   ├── 09_Normalizacion_y_Clasificacion.md # Algoritmo de normalización y cola de revisión
-│   │   └── 010_Registro_Decisiones_Riesgos.md # Decisiones, riesgos y preguntas abiertas
+│   │   ├── 010_Registro_Decisiones_Riesgos.md # Decisiones, riesgos y preguntas abiertas
+│   │   ├── 011_OCM_Configuracion_Llamadas.md  # Matriz oficial de configuración OCM
+│   │   └── 012_Asesores_Gestion_Diaria.md     # Listado de asesores por gasera
 │   └── planes/
 │       ├── 01_Plan_Estructura.md              # Hoja de ruta por fases
 │       ├── 02_Plan_Migracion_y_Estrategia_DB.md # Estrategia + cuestionario respondido
