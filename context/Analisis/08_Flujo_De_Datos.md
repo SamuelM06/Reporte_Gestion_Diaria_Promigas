@@ -8,6 +8,11 @@
 > `gestion_diaria`, y el flujo objetivo. OCM aparece como **destino de la transición**
 > (doc 07, pendiente de redactar), no como fuente de datos.
 
+> 🔴 **Actualización 21-oct-2026:** el "staging" de este diagrama **no es la gestión
+> diaria real**: es un **snapshot de una descarga manual** de los libros Excel de
+> SharePoint (cargas del 15-sep y 01-oct-2026). Procedencia verificada, evidencia SQL y
+> plan de truncado → reingesta en `database/PROCEDENCIA_Y_REINGESTA.md`.
+
 ---
 
 ## 1. Diagrama del flujo actual (estado real verificado)
@@ -19,8 +24,8 @@ flowchart TD
             X_CEO["CEO: 1 libro<br/>Inbound + Abandono"]
             X_EFI["Efigas: 1 libro<br/>Outbound"]
             X_CAR["Caribe: 2 libros<br/>In + Out + Abandono"]
-            X_SUR["Surtigas: 3 libros<br/>Hist + Cont + Out"]
-            X_GDO["GDO: 1 libro en vivo<br/>5 hojas"]
+            X_SUR["Surtigas: 4 libros<br/>2 In (Ene-Jun, Jul+) + Out + QR"]
+            X_GDO["GDO: 1 libro en vivo<br/>5 hojas de datos"]
         end
     end
 
@@ -62,6 +67,27 @@ flowchart TD
     M1 --> D1
     M2 --> D1
 ```
+
+### 1.0 Fuentes verificadas contra los archivos (21-oct-2026)
+
+| Gasera | Archivo real | Hojas de datos | Filas 2026 |
+| :--- | :--- | :---: | ---: |
+| CEO | `CEO\Gestion diaria CEO.xlsx` | 3 | 4.316 |
+| Efigas | `EFIGAS\Gestión Diaria Outbound-Efigas.xlsx` | 2 | 1.271 |
+| Gas Caribe | `GAS CARIBE\Gestión diaria Inbound Caribe.xlsx` + `…Outbound-Gases del caribe.xlsx` | 13 | 7.652 |
+| GDO | `GDO\Informe\VALIDACION INFORMACION GDO- 24 de Junio 2026.xlsx` | 6 | 14.589 |
+| Surtigas | `SURTIGAS\SURTIGAS ARCHIVO RECUPERADO - Copia.xlsx` + `JULIO - AGOSTO 2026\…` + `…Outbound SURTIGAS.xlsx` + `…-Outbound-QR.xlsx` | 17 | 14.433 |
+
+**Total 2026 a cargar: ≈ 42.070 filas** (33.501 atención/outbound + 3.383 abandono +
+5.186 PQRS). Detalle y verificación: `context/Analisis/14_Estructura_Origen_Excel.md`.
+
+> 📁 Ruta madre:
+> `<OneDrive>\Team Experiencia al Cliente - Promigas\Retención\Promigas\Gestión diaria Promigas Inb -Outbound\`
+
+> 🔴 **Reglas verificadas que gobiernan la carga:**
+> * **D-13** — la tabla conserva la estructura del Excel (mismas columnas).
+> * **D-14** — el filtro de 2026 es por **columna de fecha**, no por nombre de hoja.
+> * **D-15** — en las hojas de abandono la fecha está en la **primera columna**.
 
 ### 1.1 Puntos de quiebre del flujo actual
 

@@ -34,6 +34,18 @@
 
 **Fase:** Fase 1 completada — Auditoría de datos en origen.
 
+> 🔴 **Hallazgo de fase (21-oct-2026):** el contenido actual de `gestion_diaria` es un
+> **snapshot estático de una descarga manual de Excel de SharePoint** (cargas del
+> 15-sep y 01-oct-2026; GDO y Surtigas sin `fecha_carga`). No es la gestión diaria real
+> y hay que reemplazarlo por los registros de 2026 de las 5 gaseras. Detalle y plan:
+> **`database/PROCEDENCIA_Y_REINGESTA.md`**; estructura verificada del origen:
+> **`Analisis/14_Estructura_Origen_Excel.md`** y
+> **`database/FICHA_ORIGEN_POR_GASERA.md`**.
+>
+> ✅ **El origen ya está verificado contra los archivos reales** (9 libros, 41 hojas de
+> datos, ≈42.070 filas de 2026). Decisiones abiertas: estrategia de persistencia
+> (A-16), llave de casamiento OCM (A-17) y día de cierre de Excel (A-18).
+
 | Logro | Evidencia |
 | :--- | :--- |
 | ✅ Base de datos conectada y validada | 18 tablas, 5 vistas, 4 funciones inventariadas |
@@ -80,10 +92,14 @@
 | 12 | `Analisis/011_OCM_Configuracion_Llamadas.md` | **Matriz oficial de configuración OCM**: qué gaseras manejan inbound/outbound, líneas telefónicas y skills asignados | ✅ **Nuevo** |
 | 13 | `Analisis/012_Asesores_Gestion_Diaria.md` | **Listado de asesores de gestión diaria**: nombres, gaseras asociadas y roles por distribuidora | ✅ **Nuevo** |
 | 14 | `Analisis/13_ERD_Estado_Actual.md` | **ERD estado actual**: diagrama entidad-relación lógico del esquema `gestion_diaria` + diagnóstico de integridad (compañero textual del PDF visual) | ✅ **Nuevo** |
+| 15 | `database/PROCEDENCIA_Y_REINGESTA.md` | 🧾 **Procedencia verificada de los datos** (Excel de SharePoint, snapshot manual) + **plan de persistencia** (truncado / esquema paralelo / incremental) | ✅ **Nuevo** |
+| 16 | `database/FICHA_ORIGEN_POR_GASERA.md` | 📋 **Rutas, libros, hojas y columnas guía por gasera**, verificadas contra los archivos + volumetría 2026 | ✅ **Nuevo** |
+| 17 | `Analisis/14_Estructura_Origen_Excel.md` | 🏗️ **Inventario técnico verificado** del origen: 9 libros, 41 hojas de datos, columnas, anomalías y hallazgos (17) | ✅ **Nuevo** |
+| 18 | `database/perfilador_excel.py` | 🛠️ Profiler de libros Excel: genera el inventario de hojas/columnas sin exponer valores (PII excluida) | ✅ **Nuevo** |
 | — | `Analisis/06_Documentacion.md` | Este índice | ✅ |
 | — | `Analisis/07_Estructura_de_datos.md` | Inventario por gasera: hojas, campos clave, reglas operativas | ✅ |
 | — | `Analisis/08_Flujo_De_Datos.md` | Arquitectura de flujo de datos y flujo objetivo | ✅ |
-| — | `database/` | Conexión, plantilla de credenciales y herramienta de inspección | ✅ |
+| — | `database/` | Conexión, plantilla de credenciales, herramienta de inspección, procedencia y reingesta | ✅ |
 
 ---
 
@@ -175,7 +191,7 @@ git diff --cached | grep -E "(password|host|token|api[_-]?key|secret)" \
   && echo "ALERTA: posible secreto en el diff" || echo "OK"
 
 # Verificar que el README no contiene valores reales
-grep -E "(DataCenter_Promigas|20\.7\.15\.40|samuel_mena|5432)" README.md \
+grep -E "(DataCenter_Promigas|20\.7\.15\.40|<usuario_conexion>|5432)" README.md \
   && echo "ALERTA: valor real en README" || echo "OK"
 ```
 

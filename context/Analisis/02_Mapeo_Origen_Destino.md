@@ -1,10 +1,25 @@
-﻿# 02. Mapeo Origen → Destino
+# 02. Mapeo Origen → Destino
 
 **Proyecto:** Gestión Diaria Promigas
 **Esquema de base de datos:** `gestion_diaria`
 **Alcance:** las 16 tablas de datos del esquema `gestion_diaria`
 **Fecha:** 19 de octubre de 2026
 **Estado:** Borrador para revisión del equipo
+
+> ⚠️ **21-oct-2026 — este documento está desactualizado en los NOMBRES de hoja y de
+> columna.** La verificación contra los archivos reales (21-oct-2026) encontró que:
+> * los **nombres de hoja** cambiaron (GDO: `GESTIÓN INBOUND`, `OUT`, `INFORMATIVO`,
+>   `PQR HDI - SURA-ALFA`, `PQRS ESCRITAS`; Caribe: `ENERO 2026`…`OCTUBRE 2026 `);
+> * las **columnas guía reales** son distintas: CEO → `FECHA INGRESO LLAMADA` +
+>   `Resultado de retencion`; Caribe → `FECHA DE ATENCION`/`fecha de atencion` +
+>   `RESULTADO DE RETENCION`; Surtigas → `FECHA DE LLAMADA` + `RESULTADO FINAL`;
+>   Efigas → `FECHA DE EJECUCION` + `ESTADO`;
+> * el **filtro de 2026 es por columna de fecha, no por nombre de hoja** (D-14);
+> * en las hojas de **abandono** la fecha real está en la **primera columna** (D-15).
+>
+> 👉 **Fuente de verdad vigente: `context/Analisis/14_Estructura_Origen_Excel.md`**
+> (inventario verificado + volumetría 2026) y `database/FICHA_ORIGEN_POR_GASERA.md`
+> (vista operativa). Este documento se actualizará al final del proceso de carga.
 
 ---
 
@@ -143,9 +158,13 @@ Mapeo **idéntico** a `ceo_inbound` en las 21 columnas del bloque común, con 3 
 | 14 | `fecha_de_ejecucion` | **172 nulas (17.2%)** | `fn_parse_fecha`; las nulas van a cuarentena con R-02 |
 | 15 | `base` | ⚠️ **34 lotes distintos con formatos mezclados** | Se conserva como texto; **nunca** se castea a fecha |
 
-> **Regla Efigas (H-27, confirmada con datos):** `FECHA BASE` es la fecha de carga del
-> lote. El lote `2026-03-02` contiene ejecuciones de septiembre a noviembre. El
-> `FECHA DE EJECUCION` es la única fecha válida para análisis.
+> **Regla Efigas (H-27, confirmada con datos y por negocio el 21-oct-2026 → D-16):**
+> `FECHA DE BASE` es la fecha en que **les cargaron el lote**. `FECHA DE EJECUCION` es la
+> única fecha válida para análisis: es **el momento de la llamada**.
+> Evidencia: 90.5% de las filas tienen base ≠ ejecución, desfase máximo 273 días, y usar
+> `FECHA DE BASE` mueve 526 filas (29.8%) al mes equivocado. El lote `2026-03-02`
+> contiene ejecuciones de septiembre a noviembre. **Nunca castear `base` a fecha ni
+> usarla para filtrar.**
 
 ---
 

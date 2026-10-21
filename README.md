@@ -46,6 +46,33 @@ Las credenciales reales están en `database/.env` (**ignorado por Git**).
 
 ---
 
+## 🔴 Estado crítico: los datos actuales son un snapshot manual
+
+> Detalle y plan: **`database/PROCEDENCIA_Y_REINGESTA.md`**
+
+El contenido actual de `gestion_diaria` (48.036 filas) **no es la gestión diaria real**:
+es una **descarga manual de los libros Excel de SharePoint**, cargada por snapshot en
+dos fechas (15-sep y 01-oct-2026). GDO y Surtigas ni siquiera tienen columna
+`fecha_carga`.
+
+| Capa | Origen | ¿Automático? |
+| :--- | :--- | :--- |
+| `gestion_diaria` | Excel de SharePoint (9 libros, 5 gaseras) | ❌ Manual, snapshot |
+| `reportes.reporte_promi` | Consolidado del universo Excel | ❌ Externo al repo |
+| `ocm_retencion` | Plataforma OCM | ✅ ~2 min (única fuente viva) |
+
+**Para tener la gestión diaria real hay que recargar los registros de 2026 de las 5
+gaseras** (≈42.070 filas, ya verificados contra los archivos) y, cuando OCM arranque,
+**persistir también los registros de OCM** para no perder nada en la transición.
+
+> ✅ **El origen ya está verificado**: rutas, libros, hojas y columnas guía por gasera en
+> `database/FICHA_ORIGEN_POR_GASERA.md`, inventario técnico en
+> `context/Analisis/14_Estructura_Origen_Excel.md`.
+> 🔴 **Pendientes de decisión:** estrategia de persistencia (A-16), llave de casamiento
+> OCM↔Excel (A-17) y día de cierre de Excel (A-18).
+
+---
+
 ## 📂 Estructura del Repositorio
 
 ```text
@@ -63,7 +90,8 @@ Las credenciales reales están en `database/.env` (**ignorado por Git**).
 │   │   ├── 010_Registro_Decisiones_Riesgos.md # Decisiones, riesgos y preguntas abiertas
 │   │   ├── 011_OCM_Configuracion_Llamadas.md  # Matriz oficial de configuración OCM
 │   │   ├── 012_Asesores_Gestion_Diaria.md     # Listado de asesores por gasera
-│   │   └── 13_ERD_Estado_Actual.md            # ERD estado actual + diagnóstico de integridad
+│   │   ├── 13_ERD_Estado_Actual.md            # ERD estado actual + diagnóstico de integridad
+│   │   └── 14_Estructura_Origen_Excel.md      # 🏗️ Inventario verificado del origen Excel
 │   └── planes/
 │       ├── 01_Plan_Estructura.md              # Hoja de ruta por fases
 │       ├── 02_Plan_Migracion_y_Estrategia_DB.md # Estrategia + cuestionario respondido
@@ -74,7 +102,13 @@ Las credenciales reales están en `database/.env` (**ignorado por Git**).
 │   ├── .env.example                           # Plantilla versionada
 │   ├── conexion_template.py                   # Módulo de conexión (SQLAlchemy/pandas)
 │   ├── inspeccion_esquema.py                  # Herramienta de auditoría del esquema
+│   ├── PROCEDENCIA_Y_REINGESTA.md             # 🧾 Origen de los datos + plan de persistencia
+│   ├── FICHA_ORIGEN_POR_GASERA.md              # 📋 Rutas/libros/hojas/columnas guía por gasera
+│   ├── perfilador_excel.py                     # 🛠️ Perfilador de libros Excel (sin exponer valores)
 │   └── README.md                              # Guía de configuración y uso
+├── data/
+│   ├── raw/                                   # ⬛ Descargas de SharePoint (ignorado por Git)
+│   └── processed/                             # ⬛ Archivos normalizados (ignorado por Git)
 ├── .gitignore                                 # Protección de credenciales y datos pesados
 └── README.md
 ```

@@ -3,6 +3,17 @@
 Utilidades para la conexión a `DataCenter_Promigas` (PostgreSQL 16.14) y la auditoría
 del esquema `gestion_diaria`.
 
+> 🔴 **Estado crítico (21-oct-2026):** el contenido actual de `gestion_diaria` es un
+> **snapshot estático de una descarga manual de Excel de SharePoint** (dos fechas de
+> carga: 15-sep y 01-oct-2026). Está desactualizado y hay que reemplazarlo por la
+> gestión diaria real.
+>
+> **NO se trunca nada todavía (D-11).** Hasta que se defina el día de cierre de Excel,
+> los registros de 2026 de las 5 gaseras deben quedar registrados en la base. La
+> estrategia —truncado + recarga, esquema paralelo o carga incremental— sigue abierta
+> (**A-16**). Los registros de OCM también deben persistirse (**D-12**).
+> Ver **`PROCEDENCIA_Y_REINGESTA.md`**.
+
 ---
 
 ## 📌 Configuración
@@ -92,12 +103,49 @@ with get_db_engine().connect() as conn:
 | Esquema | Contenido | Uso en el proyecto |
 | :--- | :--- | :--- |
 | `gestion_diaria` | 17 tablas fuente + `clasificacion`, 5 vistas, 4 funciones | **Principal** — datos por gasera × cabina |
-| `reportes` | `reporte_promi` (31,122) + backup GDO (8,813) | **Principal** — capa core consolidada |
-| `ocm_retencion` | Réplica OCM: `log_calls` (338,254), agentes, campañas, sync | **Secundario** — verdad de llamadas y abandonos |
-| `siniestros` | 28,882 casos, bitácora de cargas | Fuera de alcance (proyecto paralelo) |
+| `reportes` | `reporte_promi` (29.222) + backup GDO (8.813) | **Principal** — capa core consolidada |
+| `ocm_retencion` | Réplica OCM: `log_calls` (339.499), agentes, campañas, sync | **Secundario** — verdad de llamadas y abandonos |
+| `siniestros` | 28.882 casos, bitácora de cargas | Fuera de alcance (proyecto paralelo) |
 | `auditoria` | `retencion` (54 col.) + 4 vistas | ⚗️ **Requiere `GRANT USAGE`** (P-17) |
 
 > Detalle completo en `context/Analisis/03_Modelo_Datos.md`.
+
+---
+
+## 🔎 Origen de los datos (procedencia)
+
+> Evidencia SQL y plan de reingesta: **`database/PROCEDENCIA_Y_REINGESTA.md`**
+
+| Capa | Origen físico | ¿Automático? |
+| :--- | :--- | :--- |
+| `gestion_diaria` (48.036 filas) | **Libros Excel de SharePoint** (13 libros, 5 gaseras) | ❌ Manual, snapshot 15-sep / 01-oct-2026 |
+| `gestion_diaria.clasificacion` (40) | Catálogo interno (solo GasCaribe) | ❌ Manual |
+| `reportes.reporte_promi` (29.222) | Consolidado del universo Excel (reconstruido 21-oct 15:57) | ❌ Externo al repo |
+| `ocm_retencion` (339.499 llamadas) | **Plataforma OCM** | ✅ Automático, ~2 min |
+
+* No hay **Excel local versionado**: `.gitignore` excluye `*.xlsx`/`*.xls`/`*.csv`;
+  las descargas van a `data/raw/` (ignorado por Git).
+* No hay **ETL**: cero triggers, cero procedimientos, cero jobs en la BD. Los únicos
+  scripts del repo son de **solo lectura**.
+* Las 5 vistas del esquema sobreviven a un `TRUNCATE` pero quedan vacías.
+
+### Documentos del módulo
+
+| Documento | Contenido |
+| :--- | :--- |
+| `PROCEDENCIA_Y_REINGESTA.md` | Procedencia verificada, evidencia del snapshot y plan de persistencia (truncado / esquema paralelo / incremental) |
+| `FICHA_ORIGEN_POR_GASERA.md` | **Rutas, libros, hojas y columnas guía por gasera** (verificadas contra los archivos) + volumetría 2026 |
+| `perfilador_excel.py` | Perfila libros Excel: hojas, columnas, nulos y roles. No imprime valores (PII excluida) |
+
+### Verificación rápida del origen
+
+```bash
+python database/perfilador_excel.py --ruta data/raw --muestra
+# -> context/Analisis/14_Perfil_Excel_Por_Gasera.md
+```
+
+Inventario técnico completo del origen (9 libros, 41 hojas, 17 hallazgos):
+`context/Analisis/14_Estructura_Origen_Excel.md`.
 
 ---
 
@@ -118,8 +166,13 @@ Comunes: `sqlalchemy`, `pandas`, `python-dotenv`.
 
 * `.env` está en `.gitignore` (`*.env`, `.env.*.local`). Verificar con
   `git check-ignore -v database/.env` antes de cualquier commit.
-* El usuario de conexión **no es superusuario** y no tiene permiso de escritura
-  sobre los esquemas de producción verificados.
+* El usuario de conexión (`<usuario_conexion>`) **no es superusuario**, pero **es owner de las
+  tablas** de `gestion_diaria` y `reportes`: tiene `INSERT/UPDATE/DELETE/TRUNCATE`
+  (verificado 21-oct-2026). Esto contradice la versión anterior de este README, que
+  decía que no había permiso de escritura. Consecuencia: **cualquier `TRUNCATE` es
+  irreversible y solo se respalda si antes se ejecuta la Fase 0 del plan de reingesta**
+  (`PROCEDENCIA_Y_REINGESTA.md` §5.2). Para automatizar la ingesta con otra cuenta,
+  delegar permisos explícitos al rol de ingesta.
 * `ocm_retencion.agent.pass` contiene credenciales de agentes en texto plano
   (hash base64 reversible): **no extraer ni copiar ese campo** a ningún artefacto
   del proyecto.
