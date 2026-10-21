@@ -79,6 +79,7 @@
 | 11 | `Analisis/05_Calidad_de_Datos.md` | Perfil de calidad por tabla + 20 reglas de validación | ✅ **Nuevo** |
 | 12 | `Analisis/011_OCM_Configuracion_Llamadas.md` | **Matriz oficial de configuración OCM**: qué gaseras manejan inbound/outbound, líneas telefónicas y skills asignados | ✅ **Nuevo** |
 | 13 | `Analisis/012_Asesores_Gestion_Diaria.md` | **Listado de asesores de gestión diaria**: nombres, gaseras asociadas y roles por distribuidora | ✅ **Nuevo** |
+| 14 | `Analisis/13_ERD_Estado_Actual.md` | **ERD estado actual**: diagrama entidad-relación lógico del esquema `gestion_diaria` + diagnóstico de integridad (compañero textual del PDF visual) | ✅ **Nuevo** |
 | — | `Analisis/06_Documentacion.md` | Este índice | ✅ |
 | — | `Analisis/07_Estructura_de_datos.md` | Inventario por gasera: hojas, campos clave, reglas operativas | ✅ |
 | — | `Analisis/08_Flujo_De_Datos.md` | Arquitectura de flujo de datos y flujo objetivo | ✅ |

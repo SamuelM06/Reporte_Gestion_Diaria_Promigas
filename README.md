@@ -62,7 +62,8 @@ Las credenciales reales están en `database/.env` (**ignorado por Git**).
 │   │   ├── 09_Normalizacion_y_Clasificacion.md # Algoritmo de normalización y cola de revisión
 │   │   ├── 010_Registro_Decisiones_Riesgos.md # Decisiones, riesgos y preguntas abiertas
 │   │   ├── 011_OCM_Configuracion_Llamadas.md  # Matriz oficial de configuración OCM
-│   │   └── 012_Asesores_Gestion_Diaria.md     # Listado de asesores por gasera
+│   │   ├── 012_Asesores_Gestion_Diaria.md     # Listado de asesores por gasera
+│   │   └── 13_ERD_Estado_Actual.md            # ERD estado actual + diagnóstico de integridad
 │   └── planes/
 │       ├── 01_Plan_Estructura.md              # Hoja de ruta por fases
 │       ├── 02_Plan_Migracion_y_Estrategia_DB.md # Estrategia + cuestionario respondido
