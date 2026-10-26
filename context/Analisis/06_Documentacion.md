@@ -85,6 +85,10 @@
 | 05 | `Analisis/03_Modelo_Datos.md` | **Modelo en estrella**: vista actual, vista objetivo, migraciones SQL M0–M8 con criterios de aceptación | ✅ **Nuevo** |
 | 06 | `planes/03_Definicion_de_KPIs.md` | Definición de KPIs con el negocio — 7 KPIs comunes definidos y confirmados | ✅ **Definido** |
 | 07 | `planes/04_Transicion_a_OCM.md` | Casamiento OCM×planilla y plan de apagado de Excel — delegado al compañero | 🟡 Delegado |
+| 19 | `planes/05_Plan_Fase_01_Base_Datos.md` | Fase 01 — Base de datos (Data-First): migraciones M0–M8, homologación, ingesta, trazabilidad | 🔴 En curso |
+| 20 | `planes/06_Plan_Fase_02_Backend_FastAPI.md` | Fase 02 — Backend FastAPI: API REST, auth, KPIs, tipificación, cancelaciones | ⏳ No iniciada |
+| 21 | `planes/07_Plan_Fase_03_Frontend_React_Astro.md` | Fase 03 — Frontend React + Astro: tipificación, cancelaciones, dashboards | ⏳ No iniciada |
+| 22 | `planes/08_Plan_Fase_04_Integracion_Despliegue.md` | Fase 04 — Integración y despliegue: infraestructura, CI/CD, producción | ⏳ No iniciada |
 | 08 | `Analisis/010_Registro_Decisiones_Riesgos.md` | Decisiones (D-01…D-10), propuestas (P-01…P-14), abiertas (A-01…A-15), inconsistencias, supuestos, riesgos, preguntas | ✅ Actualizado |
 | 09 | `Analisis/09_Normalizacion_y_Clasificacion.md` | Algoritmo de normalización, cola de revisión, DDL del catálogo maestro | ✅ Actualizado |
 | 10 | `Analisis/04_Hallazgos_y_Backlog.md` | 35 hallazgos con evidencia + backlog B-01…B-35 | ✅ **Nuevo** |

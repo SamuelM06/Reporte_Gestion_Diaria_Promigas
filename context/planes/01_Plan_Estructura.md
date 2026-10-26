@@ -143,6 +143,10 @@ datos (*Data-First*), donde cada fase depende de la total compresión de la fase
 | 05 | `Analisis/03_Modelo_Datos.md` | ✅ **Nuevo** |
 | 06 | `planes/03_Definicion_de_KPIs.md` | ⬜ **Falta redactar** |
 | 07 | `planes/04_Transicion_a_OCM.md` | ⬜ **Falta redactar** |
+| 08 | `planes/05_Plan_Fase_01_Base_Datos.md` | 🔴 **En curso** (DB primero) |
+| 09 | `planes/06_Plan_Fase_02_Backend_FastAPI.md` | ⏳ No iniciada |
+| 10 | `planes/07_Plan_Fase_03_Frontend_React_Astro.md` | ⏳ No iniciada |
+| 11 | `planes/08_Plan_Fase_04_Integracion_Despliegue.md` | ⏳ No iniciada |
 | 08 | `Analisis/010_Registro_Decisiones_Riesgos.md` | ✅ Actualizado |
 | 09 | `Analisis/09_Normalizacion_y_Clasificacion.md` | ✅ Actualizado |
 | 10 | `Analisis/04_Hallazgos_y_Backlog.md` | ✅ |

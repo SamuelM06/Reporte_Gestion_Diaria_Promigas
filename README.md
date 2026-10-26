@@ -96,7 +96,11 @@ gaseras** (≈42.070 filas, ya verificados contra los archivos) y, cuando OCM ar
 │       ├── 01_Plan_Estructura.md              # Hoja de ruta por fases
 │       ├── 02_Plan_Migracion_y_Estrategia_DB.md # Estrategia + cuestionario respondido
 │       ├── 03_Definicion_de_KPIs.md           # 🟡 7 KPIs definidos; fórmulas pendientes
-│       └── 04_Transicion_a_OCM.md             # 🟡 Delegado al compañero del equipo
+│       ├── 04_Transicion_a_OCM.md             # 🟡 Delegado al compañero del equipo
+│       ├── 05_Plan_Fase_01_Base_Datos.md      # 🔴 Fase 01 — Base de datos (Data-First)
+│       ├── 06_Plan_Fase_02_Backend_FastAPI.md # ⏳ Fase 02 — Backend FastAPI
+│       ├── 07_Plan_Fase_03_Frontend_React_Astro.md # ⏳ Fase 03 — Frontend React + Astro
+│       └── 08_Plan_Fase_04_Integracion_Despliegue.md # ⏳ Fase 04 — Integración y despliegue
 ├── database/
 │   ├── .env                                   # Credenciales reales (NO versionar)
 │   ├── .env.example                           # Plantilla versionada
